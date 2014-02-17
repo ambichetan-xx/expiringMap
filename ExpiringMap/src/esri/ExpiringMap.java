@@ -254,6 +254,9 @@ public class ExpiringMap<K, V> implements Map<K, V> {
 				// if the idle time is more that the time to live milliseconds,
 				// remove it
 				if (timeIdle >= timeToLiveMillis) {
+					System.out.println("Entry removed : " + o.getKey()
+							+ " since it is idle from :" + timeIdle / 1000
+							+ " secs");
 					internalMap.remove(o.getKey());
 				}
 			}
@@ -312,7 +315,7 @@ public class ExpiringMap<K, V> implements Map<K, V> {
 			stateLock.readLock().lock();
 
 			try {
-				return (int) timeToLiveMillis / 1000;
+				return (int) timeToLiveMillis;
 			} finally {
 				stateLock.readLock().unlock();
 			}
@@ -325,7 +328,7 @@ public class ExpiringMap<K, V> implements Map<K, V> {
 			stateLock.writeLock().lock();
 
 			try {
-				this.timeToLiveMillis = timeToLive * 1000;
+				this.timeToLiveMillis = timeToLive;
 			} finally {
 				stateLock.writeLock().unlock();
 			}
@@ -339,7 +342,7 @@ public class ExpiringMap<K, V> implements Map<K, V> {
 			stateLock.readLock().lock();
 
 			try {
-				return (int) expirationIntervalMillis / 1000;
+				return (int) expirationIntervalMillis;
 			} finally {
 				stateLock.readLock().unlock();
 			}
@@ -353,7 +356,7 @@ public class ExpiringMap<K, V> implements Map<K, V> {
 			stateLock.writeLock().lock();
 
 			try {
-				this.expirationIntervalMillis = expirationInterval * 1000;
+				this.expirationIntervalMillis = expirationInterval;
 			} finally {
 				stateLock.writeLock().unlock();
 			}
@@ -369,6 +372,15 @@ public class ExpiringMap<K, V> implements Map<K, V> {
 		expiringMap.getExpirer().startExpiring();
 		expiringMap.put(10, 10);
 		expiringMap.put(20, 20);
+
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		// accessing 10 here, so that it's last access time is reset
+		expiringMap.get(10);
 
 		try {
 			Thread.sleep(1000);
